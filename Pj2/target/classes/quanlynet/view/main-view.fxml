@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane stylesheets="@stylemain.css" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="quanlynet.controller.MainController">
+    <center>
+        <HBox>
+            <!-- Phần Left -->
+            <VBox fx:id="leftMenu" alignment="TOP_LEFT" spacing="10" styleClass="vbox-left">
+                <Button onAction="#showUserView" text="User" styleClass="button-user" />
+            </VBox>
+
+            <!-- Phần Center -->
+            <StackPane fx:id="contentArea" HBox.hgrow="ALWAYS" />
+        </HBox>
+    </center>
+</BorderPane>
