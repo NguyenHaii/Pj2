@@ -13,6 +13,7 @@ import javafx.stage.Stage;
 import quanlynet.model.User;
 
 import javafx.geometry.Insets;
+import quanlynet.validation.UsernameValidator;
 
 public class UserController {
 
@@ -36,8 +37,8 @@ public class UserController {
     public void initialize() {
         // Khởi tạo bảng người dùng
         userList = FXCollections.observableArrayList(
-                new User("user1", "password1", 100.0, "0123456789"),
-                new User("user2", "password2", 50.0, "0987654321")
+                new User("Hoàng Văn Trầng", "password1", 100.0, "0123456789"),
+                new User("Nguyễn Văn Hải", "password2", 50.0, "0987654321")
         );
 
         // Liên kết các cột với thuộc tính người dùng
@@ -50,6 +51,8 @@ public class UserController {
         userTable.setItems(userList);
 
     }
+
+
 
     @FXML
     private void napTienAction() {
@@ -76,6 +79,39 @@ public class UserController {
             showAlert("Vui lòng chọn một tài khoản để nạp tiền.");
         }
     }
+
+    @FXML
+    private void timKiemTaiKhoan() {
+        // Hiển thị hộp thoại nhập chữ cái đầu tiên của tên
+        TextInputDialog searchDialog = new TextInputDialog();
+        searchDialog.setTitle("Tìm kiếm tài khoản");
+        searchDialog.setHeaderText("Nhập chữ cái đầu tiên của tên người dùng:");
+        searchDialog.setContentText("Chữ cái đầu tiên:");
+
+        searchDialog.showAndWait().ifPresent(letter -> {
+            if (letter != null && !letter.trim().isEmpty()) {
+                char searchLetter = letter.trim().toUpperCase().charAt(0); // Lấy ký tự đầu tiên và chuyển thành chữ hoa
+                ObservableList<User> filteredList = FXCollections.observableArrayList();
+
+                // Lọc danh sách người dùng theo chữ cái đầu tiên của tên (tách họ và tên)
+                for (User user : userList) {
+                    // Tách họ và tên người dùng
+                    String[] nameParts = user.getUsername().split("\\s+"); // Tách tên theo khoảng trắng
+                    if (nameParts.length > 0 && nameParts[0].toUpperCase().charAt(0) == searchLetter) {
+                        filteredList.add(user);
+                    }
+                }
+
+                if (!filteredList.isEmpty()) {
+                    userTable.setItems(filteredList); // Cập nhật bảng với danh sách đã lọc
+                } else {
+                    showAlert("Không tìm thấy tài khoản có chữ cái đầu tiên của tên là " + searchLetter);
+                }
+            }
+        });
+    }
+
+
 
     public void napTien() {
         try {
@@ -115,7 +151,6 @@ public class UserController {
 
     @FXML
     private void themTaiKhoan() {
-        // Hiển thị hộp thoại để nhập thông tin tài khoản mới
         TextInputDialog usernameDialog = new TextInputDialog();
         usernameDialog.setTitle("Thêm tài khoản");
         usernameDialog.setHeaderText("Nhập tên đăng nhập mới:");
@@ -136,18 +171,20 @@ public class UserController {
         balanceDialog.setHeaderText("Nhập số dư tài khoản:");
         balanceDialog.setContentText("Số tiền:");
 
-
-
         usernameDialog.showAndWait().ifPresent(newUsername -> {
+            if (!UsernameValidator.isValidUsername(newUsername)) {
+                showAlert("Tên đăng nhập không được chứa dấu cách.");
+                return;
+            }
+
             passwordDialog.showAndWait().ifPresent(newPassword -> {
                 balanceDialog.showAndWait().ifPresent(balance -> {
                     phoneDialog.showAndWait().ifPresent(phoneNumber -> {
                         try {
-                            // Thêm tài khoản mới vào danh sách
                             double initialBalance = Double.parseDouble(balance);
                             User newUser = new User(newUsername, newPassword, initialBalance, phoneNumber);
-                            userList.add(newUser); // Thêm tài khoản vào danh sách
-                            userTable.refresh(); // Cập nhật bảng hiển thị
+                            userList.add(newUser);
+                            userTable.refresh();
                         } catch (NumberFormatException e) {
                             showAlert("Vui lòng nhập số dư hợp lệ.");
                         }
@@ -156,6 +193,7 @@ public class UserController {
             });
         });
     }
+
 
     @FXML
     private void xoaTaiKhoan() {
